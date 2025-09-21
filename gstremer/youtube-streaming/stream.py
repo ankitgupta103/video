@@ -116,7 +116,7 @@ bus.connect("message", bus_call, GLib.MainLoop())
 # Start streaming
 # -------------------------------
 pipeline.set_state(Gst.State.PLAYING)
-print("📡 Streaming to YouTube started. Press Ctrl+C to stop...")
+print("  Streaming to YouTube started. Press Ctrl+C to stop...")
 
 # Run main loop
 try:
