@@ -226,11 +226,11 @@ rtmpsink location="rtmp://a.rtmp.youtube.com/live2/YOUR-STREAM-KEY"
 
 ### Pipeline Flow Summary
 
-1. **📹 Video Capture**: Physical camera → V4L2 driver → Raw frames
-2. **🎬 Video Processing**: Format specification → Color conversion → H.264 encoding
-3. **🔇 Audio Generation**: Silent test source → Format conversion → AAC encoding  
-4. **🎭 Stream Muxing**: Combine video + audio → FLV container format
-5. **📡 Live Streaming**: RTMP protocol → YouTube Live servers → 🔴 Live broadcast
+1. **Video Capture**: Physical camera → V4L2 driver → Raw frames
+2. **Video Processing**: Format specification → Color conversion → H.264 encoding
+3. **Audio Generation**: Silent test source → Format conversion → AAC encoding  
+4. **Stream Muxing**: Combine video + audio → FLV container format
+5. **Live Streaming**: RTMP protocol → YouTube Live servers → Live broadcast
 
 ### Data Rates & Formats
 
