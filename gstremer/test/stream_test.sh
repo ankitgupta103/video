@@ -1,8 +1,8 @@
 #!/bin/bash
-
 # === CONFIGURATION ===
 VIDEO_FILE="14392175_1920_1080_60fps.mp4"
-RTMP_URL="rtmp://a.rtmp.youtube.com/live2/YOUR-STREAM-KEY"
+RTMP_URL="rtmp://a.rtmp.youtube.com/live2/ktre-cax9-01tr-tr8a-1q94"
+# RTMP_URL="rtmp://a.rtmp.youtube.com/live2/keuv-czrj-2m55-pswv-ctwk"
 
 # === USAGE HELP ===
 usage() {
@@ -52,11 +52,10 @@ case $CASE in
     KEYINT=60
     ;;
   *)
-    echo " Invalid option: $CASE"
+    echo "Invalid option: $CASE"
     usage
     ;;
 esac
-
 
 # ====== PRINT TEST DETAILS ======
 echo "========================================="
@@ -68,28 +67,32 @@ echo "Keyframe Interval: ${KEYINT}"
 echo "========================================="
 
 # === RUN GSTREAMER PIPELINE ===
-echo " Starting stream: $CASE ($WIDTH x $HEIGHT @ ${FPS}fps, ${BITRATE}kbps)"
-# gst-launch-1.0 -v \
-#   filesrc location="$VIDEO_FILE" ! decodebin ! \
-#   videoconvert ! videoscale ! video/x-raw,width=$WIDTH,height=$HEIGHT,framerate=$FPS/1 ! \
-#   x264enc tune=zerolatency bitrate=$BITRATE speed-preset=superfast key-int-max=$KEYINT ! \
-#   h264parse ! flvmux streamable=true name=mux ! \
-#   rtmpsink location="$RTMP_URL" \
-#   audiotestsrc is-live=true wave=silence ! audioconvert ! voaacenc bitrate=$AUDIO_BR ! mux.
-while true; do
-  gst-launch-1.0 -v \
-    filesrc location="$VIDEO_FILE" ! decodebin ! \
-    videoconvert ! videoscale ! video/x-raw,width=$WIDTH,height=$HEIGHT,framerate=$FPS/1 ! \
-    x264enc tune=zerolatency bitrate=$BITRATE speed-preset=superfast key-int-max=$KEYINT ! \
-    h264parse ! flvmux streamable=true name=mux ! \
-    rtmpsink location="$RTMP_URL" \
-    audiotestsrc is-live=true wave=silence ! audioconvert ! voaacenc bitrate=$AUDIO_BR ! mux.
-    
-  echo "🔁 Video ended, restarting..."
-done
+echo "Starting stream: $CASE ($WIDTH x $HEIGHT @ ${FPS}fps, ${BITRATE}kbps)"
 
-gst-launch-1.0 -v \
-  v4l2src device=/dev/video0 ! video/x-raw,width=640,height=480,framerate=30/1 ! videoconvert ! \
-  x264enc tune=zerolatency bitrate=1000 speed-preset=superfast key-int-max=60 ! h264parse ! \
-  flvmux streamable=true name=mux ! rtmpsink location="rtmp://a.rtmp.youtube.com/live2/vsgj-g361-09ua-cf8a-5c3y" \
-  audiotestsrc is-live=true wave=silence ! audioconvert ! voaacenc bitrate=128000 ! mux.
+# Check if video file exists
+if [ ! -f "$VIDEO_FILE" ]; then
+    echo "Error: Video file '$VIDEO_FILE' not found!"
+    exit 1
+fi
+
+while true; do
+  echo "Starting pipeline..."
+  
+  gst-launch-1.0 -v \
+    filesrc location="$VIDEO_FILE" ! \
+    qtdemux name=demux \
+    demux.video_0 ! queue ! h264parse ! avdec_h264 ! \
+    videoconvert ! videoscale ! videorate ! \
+    video/x-raw,width=$WIDTH,height=$HEIGHT,framerate=$FPS/1 ! \
+    x264enc tune=zerolatency bitrate=$BITRATE speed-preset=ultrafast key-int-max=$KEYINT ! \
+    video/x-h264,profile=baseline ! h264parse ! \
+    flvmux streamable=true name=mux ! \
+    rtmpsink location="$RTMP_URL" sync=false \
+    audiotestsrc is-live=true wave=silence ! \
+    audioconvert ! audioresample ! \
+    audio/x-raw,rate=44100,channels=1 ! \
+    voaacenc bitrate=$AUDIO_BR ! mux.
+    
+  echo "Pipeline ended, restarting in 2 seconds..."
+  sleep 2
+done
