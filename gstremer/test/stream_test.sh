@@ -57,6 +57,16 @@ case $CASE in
     ;;
 esac
 
+
+# ====== PRINT TEST DETAILS ======
+echo "========================================="
+echo "Resolution: ${WIDTH}x${HEIGHT}"
+echo "Frame Rate: ${FPS} FPS"
+echo "Video Bitrate: ${VIDEO_BITRATE} kbps"
+echo "Audio Bitrate: ${AUDIO_BITRATE} bps"
+echo "Keyframe Interval: ${KEY_INT_MAX}"
+echo "========================================="
+
 # === RUN GSTREAMER PIPELINE ===
 echo " Starting stream: $CASE ($WIDTH x $HEIGHT @ ${FPS}fps, ${BITRATE}kbps)"
 # gst-launch-1.0 -v \
