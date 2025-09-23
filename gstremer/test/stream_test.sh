@@ -23,8 +23,8 @@ case $CASE in
     WIDTH=640
     HEIGHT=360
     FPS=30
-    BITRATE=500
-    AUDIO_BR=64000
+    BITRATE=500               # kbps
+    AUDIO_BR=64000            # bps
     KEYINT=60
     ;;
   720p30)
@@ -52,17 +52,28 @@ case $CASE in
     KEYINT=60
     ;;
   *)
-    echo "❌ Invalid option: $CASE"
+    echo " Invalid option: $CASE"
     usage
     ;;
 esac
 
 # === RUN GSTREAMER PIPELINE ===
 echo " Starting stream: $CASE ($WIDTH x $HEIGHT @ ${FPS}fps, ${BITRATE}kbps)"
-gst-launch-1.0 -v \
-  filesrc location="$VIDEO_FILE" ! decodebin ! \
-  videoconvert ! videoscale ! video/x-raw,width=$WIDTH,height=$HEIGHT,framerate=$FPS/1 ! \
-  x264enc tune=zerolatency bitrate=$BITRATE speed-preset=superfast key-int-max=$KEYINT ! \
-  h264parse ! flvmux streamable=true name=mux ! \
-  rtmpsink location="$RTMP_URL" \
-  audiotestsrc is-live=true wave=silence ! audioconvert ! voaacenc bitrate=$AUDIO_BR ! mux.
+# gst-launch-1.0 -v \
+#   filesrc location="$VIDEO_FILE" ! decodebin ! \
+#   videoconvert ! videoscale ! video/x-raw,width=$WIDTH,height=$HEIGHT,framerate=$FPS/1 ! \
+#   x264enc tune=zerolatency bitrate=$BITRATE speed-preset=superfast key-int-max=$KEYINT ! \
+#   h264parse ! flvmux streamable=true name=mux ! \
+#   rtmpsink location="$RTMP_URL" \
+#   audiotestsrc is-live=true wave=silence ! audioconvert ! voaacenc bitrate=$AUDIO_BR ! mux.
+while true; do
+  gst-launch-1.0 -v \
+    filesrc location="$VIDEO_FILE" ! decodebin ! \
+    videoconvert ! videoscale ! video/x-raw,width=$WIDTH,height=$HEIGHT,framerate=$FPS/1 ! \
+    x264enc tune=zerolatency bitrate=$VIDEO_BITRATE speed-preset=superfast key-int-max=$KEY_INT_MAX ! \
+    h264parse ! flvmux streamable=true name=mux ! \
+    rtmpsink location="$RTMP_URL" \
+    audiotestsrc is-live=true wave=silence ! audioconvert ! voaacenc bitrate=$AUDIO_BITRATE ! mux.
+    
+  echo "🔁 Video ended, restarting..."
+done
