@@ -62,9 +62,9 @@ esac
 echo "========================================="
 echo "Resolution: ${WIDTH}x${HEIGHT}"
 echo "Frame Rate: ${FPS} FPS"
-echo "Video Bitrate: ${VIDEO_BITRATE} kbps"
-echo "Audio Bitrate: ${AUDIO_BITRATE} bps"
-echo "Keyframe Interval: ${KEY_INT_MAX}"
+echo "Video Bitrate: ${BITRATE} kbps"
+echo "Audio Bitrate: ${AUDIO_BR} bps"
+echo "Keyframe Interval: ${KEYINT}"
 echo "========================================="
 
 # === RUN GSTREAMER PIPELINE ===
@@ -80,10 +80,16 @@ while true; do
   gst-launch-1.0 -v \
     filesrc location="$VIDEO_FILE" ! decodebin ! \
     videoconvert ! videoscale ! video/x-raw,width=$WIDTH,height=$HEIGHT,framerate=$FPS/1 ! \
-    x264enc tune=zerolatency bitrate=$VIDEO_BITRATE speed-preset=superfast key-int-max=$KEY_INT_MAX ! \
+    x264enc tune=zerolatency bitrate=$BITRATE speed-preset=superfast key-int-max=$KEYINT ! \
     h264parse ! flvmux streamable=true name=mux ! \
     rtmpsink location="$RTMP_URL" \
-    audiotestsrc is-live=true wave=silence ! audioconvert ! voaacenc bitrate=$AUDIO_BITRATE ! mux.
+    audiotestsrc is-live=true wave=silence ! audioconvert ! voaacenc bitrate=$AUDIO_BR ! mux.
     
   echo "🔁 Video ended, restarting..."
 done
+
+gst-launch-1.0 -v \
+  v4l2src device=/dev/video0 ! video/x-raw,width=640,height=480,framerate=30/1 ! videoconvert ! \
+  x264enc tune=zerolatency bitrate=1000 speed-preset=superfast key-int-max=60 ! h264parse ! \
+  flvmux streamable=true name=mux ! rtmpsink location="rtmp://a.rtmp.youtube.com/live2/vsgj-g361-09ua-cf8a-5c3y" \
+  audiotestsrc is-live=true wave=silence ! audioconvert ! voaacenc bitrate=128000 ! mux.
