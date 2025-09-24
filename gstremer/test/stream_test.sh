@@ -95,5 +95,5 @@ while true; do
     voaacenc bitrate=$AUDIO_BR ! mux.
     
   echo "Pipeline ended, restarting in 2 seconds..."
-  sleep 2
+  sleep 0
 done
