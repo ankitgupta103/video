@@ -1,6 +1,7 @@
 #!/bin/bash
 # === CONFIGURATION ===
-VIDEO_FILE="14392175_1920_1080_60fps.mp4"
+# VIDEO_FILE="14392175_1920_1080_60fps.mp4"
+VIDEO_FILE="Danube_river.mp4"
 RTMP_URL="rtmp://a.rtmp.youtube.com/live2/ktre-cax9-01tr-tr8a-1q94"
 # RTMP_URL="rtmp://a.rtmp.youtube.com/live2/keuv-czrj-2m55-pswv-ctwk"
 
