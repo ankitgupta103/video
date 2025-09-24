@@ -78,8 +78,8 @@ fi
 
 while true; do
   echo "Starting pipeline..."
-  
-  gst-launch-1.0 -v \
+
+  gst-launch-1.0 -e -v \
     filesrc location="$VIDEO_FILE" ! \
     qtdemux name=demux \
     demux.video_0 ! queue ! h264parse ! avdec_h264 ! \
