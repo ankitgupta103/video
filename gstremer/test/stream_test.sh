@@ -77,11 +77,32 @@ if [ ! -f "$VIDEO_FILE" ]; then
     exit 1
 fi
 
+# while true; do
+#   echo "Starting pipeline..."
+
+#   gst-launch-1.0 -e -v \
+#     uridecodebin uri="file://$PWD/$VIDEO_FILE" name=dec \
+#     dec. ! videoconvert ! videoscale ! videorate ! \
+#       video/x-raw,width=$WIDTH,height=$HEIGHT,framerate=$FPS/1 ! \
+#       x264enc tune=zerolatency bitrate=$BITRATE speed-preset=ultrafast key-int-max=$KEYINT ! \
+#       video/x-h264,profile=baseline ! h264parse ! \
+#       flvmux streamable=true name=mux ! \
+#       rtmpsink location="$RTMP_URL" sync=false \
+#     audiotestsrc is-live=true wave=silence ! \
+#       audioconvert ! audioresample ! \
+#       audio/x-raw,rate=44100,channels=1 ! \
+#       voaacenc bitrate=$AUDIO_BR ! mux.
+
+#   echo "Pipeline ended, restarting in 2 seconds..."
+#   sleep 2
+# done
+
 while true; do
   echo "Starting pipeline..."
 
   gst-launch-1.0 -e -v \
-    uridecodebin uri="file://$PWD/$VIDEO_FILE" name=dec \
+    filesrc location="$VIDEO_FILE" ! \
+    decodebin name=dec \
     dec. ! videoconvert ! videoscale ! videorate ! \
       video/x-raw,width=$WIDTH,height=$HEIGHT,framerate=$FPS/1 ! \
       x264enc tune=zerolatency bitrate=$BITRATE speed-preset=ultrafast key-int-max=$KEYINT ! \
