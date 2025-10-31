@@ -1,176 +1,218 @@
 # RM530 5G Modem Integration
 
-This directory contains integration guides and scripts for configuring the Waveshare RM530 5G modem with Raspberry Pi.
-
-## Integration Options
-
-### Option 1: ECM Mode (Recommended) ✅
-
-**Best for**: Stable, uninterrupted connectivity with native Linux integration
-
-**File**: `ecm-integration.md`
-
-**Benefits**:
-- Uses native Linux kernel ECM driver
-- Managed by NetworkManager (standard Linux networking)
-- No external dialer tools needed
-- More stable than QMI
-- Automatic reconnection
-- Better performance
-
-**Use this if**: You want reliable, uninterrupted internet without custom scripts.
-
-### Option 2: QMI Mode
-
-**Best for**: Legacy compatibility with waveshare-CM tools
-
-**File**: `integration.md`
-
-**Benefits**:
-- Well-documented by Waveshare
-- Works with official Waveshare tools
-
-**Limitations**:
-- Requires waveshare-CM external dialer
-- Potential connectivity interruptions
-- Manual DNS management
-- More complex setup
-
-**Use this if**: You have specific requirements for QMI mode or legacy compatibility.
+Complete integration guide for Waveshare RM530 5G modem with Raspberry Pi using **ECM (Ethernet Control Model)**.
 
 ---
 
-## Quick Start: ECM Mode
+## 🚀 Quick Start (Already Done!)
 
-### 1. Install Python Serial Library
+Your modem is already integrated! Here's what happened:
 
-```bash
-sudo apt-get update
-sudo apt-get install -y python3-pip python3-serial
+1. ✅ Switched from QMI to ECM mode
+2. ✅ Configured NetworkManager
+3. ✅ Connected and verified
+
+**See**: `docs/SETUP-COMPLETE.md` for details.
+
+---
+
+## 📁 Directory Structure
+
 ```
-
-### 2. Run ECM Setup Script
-
-```bash
-cd 5g-integration
-sudo python3 setup-ecm-mode.py airtelgprs.com
-```
-
-Replace `airtelgprs.com` with your carrier's APN.
-
-### 3. Wait for Modem Reset
-
-Wait 15 seconds for the modem to restart in ECM mode.
-
-### 4. Configure NetworkManager
-
-```bash
-# Find the new interface name
-ip link show
-
-# Create NetworkManager connection (replace usb0 with your interface)
-sudo nmcli connection add \
-    type ethernet \
-    ifname usb0 \
-    con-name "RM530-5G-ECM" \
-    ipv4.method auto \
-    ipv4.route-metric 100 \
-    ipv4.dns "8.8.8.8 1.1.1.1" \
-    connection.autoconnect yes
-
-# Connect
-sudo nmcli connection up RM530-5G-ECM
-```
-
-### 5. Verify Connectivity
-
-```bash
-# Check IP
-ip addr show usb0
-
-# Test internet
-ping -c 4 8.8.8.8
-ping -c 4 google.com
+5g-integration/
+├── README.md                    ← You are here!
+├── README-INDEX.md              ← Quick file index
+├── GETTING-STARTED.md           ← Navigation guide
+│
+├── scripts/                     ← Automation scripts
+│   ├── setup-ecm-mode.py       ← Switch modem to ECM mode
+│   ├── configure-network.sh    ← NetworkManager setup
+│   └── verify-5g.sh            ← Verify 5G is active
+│
+├── docs/                        ← Complete documentation
+│   ├── SETUP-COMPLETE.md       ← Success summary & tips
+│   ├── ecm-integration.md      ← Full ECM setup guide
+│   ├── verify-5g.md            ← How to verify connection
+│   └── NEXT-STEPS.md           ← Quick reference
+│
+├── legacy/                      ← Old QMI mode docs (reference only)
+│   ├── integration.md          ← QMI mode setup (don't use)
+│   └── comparison-qmi-vs-ecm.md ← Why ECM is better
+│
+└── reference/                   ← Additional resources
+    ├── AT-COMMANDS.md          ← AT command reference
+    └── TROUBLESHOOTING.md       ← Troubleshooting guide
 ```
 
 ---
 
-## Files in This Directory
+## 📖 Documentation Guide
+
+### 🎯 **Start Here**
+
+| File | When to Use |
+|------|-------------|
+| **README.md** | This file - main overview |
+| **GETTING-STARTED.md** | Navigation guide & quick access |
+| **README-INDEX.md** | Complete file index |
+| **docs/SETUP-COMPLETE.md** | After successful setup |
+
+### 📚 **Main Documentation**
 
 | File | Purpose |
 |------|---------|
-| `ecm-integration.md` | Complete ECM mode setup guide |
-| `integration.md` | QMI mode setup guide (legacy) |
-| `setup-ecm-mode.py` | Python script to switch modem to ECM mode |
-| `README.md` | This file |
+| **docs/ecm-integration.md** | Complete ECM setup guide (manual) |
+| **docs/verify-5g.md** | How to verify 5G is working |
+| **docs/NEXT-STEPS.md** | Quick command reference |
+
+### 🔧 **Scripts**
+
+| File | Purpose | Run It When |
+|------|---------|-------------|
+| **scripts/setup-ecm-mode.py** | Switch modem to ECM | First time setup only |
+| **scripts/configure-network.sh** | Setup NetworkManager | After ECM mode switch |
+| **scripts/verify-5g.sh** | Verify 5G is active | Anytime to check status |
+
+### 📜 **Legacy (Reference Only)**
+
+| File | Purpose |
+|------|---------|
+| **legacy/integration.md** | Old QMI mode setup (don't use) |
+| **legacy/comparison-qmi-vs-ecm.md** | Technical comparison |
+
+### 📖 **Reference**
+
+| File | Purpose |
+|------|---------|
+| **reference/AT-COMMANDS.md** | AT command reference |
+| **reference/TROUBLESHOOTING.md** | Complete troubleshooting guide |
 
 ---
 
-## Understanding the Difference
+## 🎯 Common Tasks
 
-### QMI (Qualcomm MSM Interface)
-
-- Protocol: Qualcomm-specific QMI protocol
-- Tools: waveshare-CM, qmicli
-- Interface: wwan0
-- Management: External scripts
-- Stability: Can have interruptions
-
-### ECM (Ethernet Control Model)
-
-- Protocol: Standard USB CDC-ECM
-- Tools: Native Linux kernel driver
-- Interface: usb0 or wwan0
-- Management: NetworkManager
-- Stability: More stable, native support
-
----
-
-## Troubleshooting
-
-### Can't Find Modem
+### Verify 5G is Working
 
 ```bash
-# Check USB devices
-lsusb | grep Qualcomm
-
-# Check serial ports
-ls -la /dev/ttyUSB*
-
-# Check dmesg
-sudo dmesg | grep -i "tty\|usb\|qualcomm"
+bash scripts/verify-5g.sh
 ```
 
-### Interface Not Created
+Or check manually:
 
 ```bash
-# Verify ECM mode is set
+ip route | grep default | grep usb0  # Should show usb0
+nmcli connection show --active        # Should show RM530-5G-ECM
+ping -c 3 google.com                  # Should work
+```
+
+### Troubleshooting
+
+```bash
+# Check connection status
+nmcli connection show RM530-5G-ECM
+
+# View logs
+journalctl -u NetworkManager -f
+
+# Restart connection
+sudo nmcli connection up RM530-5G-ECM
+```
+
+**Full troubleshooting**: See `reference/TROUBLESHOOTING.md`
+
+### Check Signal Strength
+
+```bash
 sudo screen /dev/ttyUSB2 115200
-# Type: AT+QCFG="usbnet"
-# Should return: +QCFG: "usbnet",1
+# Type: AT+CSQ
+# Exit: Ctrl+A then K
 ```
-
-### No Internet
-
-```bash
-# Check interface status
-ip link show usb0
-
-# Check routing
-ip route
-
-# Check DNS
-cat /etc/resolv.conf
-```
-
-See `ecm-integration.md` for detailed troubleshooting steps.
 
 ---
 
-## References
+## 🔧 Re-running Setup
 
-- [Waveshare PCIe TO 4G/5G M.2 USB3.2 HAT+ Wiki](https://www.waveshare.com/wiki/PCIe-TO-4G-5G-M.2-USB3.2-HAT-PLUS)
+### If You Need to Start Over
+
+```bash
+# 1. Switch to ECM mode (if modem reset)
+sudo python3 scripts/setup-ecm-mode.py airtelgprs.com
+
+# 2. Configure NetworkManager
+bash scripts/configure-network.sh
+
+# 3. Verify
+bash scripts/verify-5g.sh
+```
+
+### If Only NetworkManager Needs Reset
+
+```bash
+# Re-configure NetworkManager
+bash scripts/configure-network.sh
+```
+
+---
+
+## 📊 Current Status
+
+**Mode**: ECM (Ethernet Control Model)  
+**Interface**: usb0  
+**Manager**: NetworkManager  
+**Auto-connect**: Yes  
+**Primary Route**: Yes  
+
+**Configuration**: Production-ready ✅
+
+---
+
+## 🆚 ECM vs QMI
+
+**Why ECM?**
+- ✅ Native Linux integration
+- ✅ More stable
+- ✅ No custom scripts
+- ✅ Standard tools
+- ✅ Better performance
+
+**Why NOT QMI?**
+- ❌ Requires waveshare-CM
+- ❌ More complex
+- ❌ Can have interruptions
+- ❌ Manual DNS management
+
+**Details**: See `legacy/comparison-qmi-vs-ecm.md`
+
+---
+
+## 🔗 Quick Links
+
+- **Setup Complete**: `docs/SETUP-COMPLETE.md`
+- **Verify Connection**: `bash scripts/verify-5g.sh`
+- **Troubleshooting**: `docs/ecm-integration.md` section "Troubleshooting"
+- **Reference**: `README-INDEX.md`
+
+---
+
+## 📚 External Resources
+
+- [Waveshare PCIe TO 4G/5G HAT+ Wiki](https://www.waveshare.com/wiki/PCIe-TO-4G-5G-M.2-USB3.2-HAT-PLUS)
 - [RM530 AT Commands](https://www.waveshare.com/wiki/RM520N-GL-5G-HAT-PLUS)
-- [NetworkManager Documentation](https://networkmanager.dev/docs/)
-- [Linux USB CDC-ECM Documentation](https://www.kernel.org/doc/html/latest/usb/cdc-ecm.html)
+- [NetworkManager Docs](https://networkmanager.dev/docs/)
+- [Linux CDC-ECM](https://www.kernel.org/doc/html/latest/usb/cdc-ecm.html)
+
+---
+
+## 💡 Tips
+
+1. **Always verify** after changes: `bash scripts/verify-5g.sh`
+2. **Check signal** if connection is slow: `AT+CSQ` via ttyUSB2
+3. **Monitor logs**: `journalctl -u NetworkManager -f`
+4. **Keep scripts** executable: `chmod +x scripts/*.sh`
+
+---
+
+## 🎉 Success!
+
+Your 5G modem is integrated and working. Happy streaming! 📹🚀
 
