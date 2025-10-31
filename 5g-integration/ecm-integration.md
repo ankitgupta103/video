@@ -264,6 +264,22 @@ sudo systemctl daemon-reload
 
 ## Troubleshooting
 
+### Script Can't Find Modem Serial Port
+
+If the script fails to find the modem:
+```bash
+# 1. Check if ModemManager is locking the port
+sudo systemctl stop ModemManager
+
+# 2. Run the script again
+sudo python3 setup-ecm-mode.py airtelgprs.com
+
+# 3. Re-enable ModemManager after
+sudo systemctl start ModemManager
+```
+
+The script will automatically detect and offer to stop ModemManager.
+
 ### Modem Not Detected
 ```bash
 # Check USB connections
