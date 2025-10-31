@@ -26,21 +26,48 @@ def find_modem_serial():
     # List all ttyUSB devices
     ports = glob.glob('/dev/ttyUSB*')
     
-    for port in sorted(ports):
+    if not ports:
+        print("  No /dev/ttyUSB* devices found")
+        return None
+    
+    print(f"  Found {len(ports)} serial ports: {', '.join(sorted(ports))}")
+    
+    # Try likely AT command ports first (usually ttyUSB2)
+    preferred_ports = ['/dev/ttyUSB2', '/dev/ttyUSB3', '/dev/ttyUSB1', '/dev/ttyUSB0']
+    all_ports = [p for p in preferred_ports if p in ports] + [p for p in ports if p not in preferred_ports]
+    
+    for port in all_ports:
         try:
+            print(f"  Testing {port}...")
             # Try to open and send AT command
             ser = serial.Serial(port, AT_BAUDRATE, timeout=TIMEOUT)
+            time.sleep(0.3)  # Give port time to initialize
+            
+            # Clear any initial data
+            if ser.in_waiting:
+                ser.read(ser.in_waiting)
+            
+            # Send AT command
             ser.write(b'AT\r\n')
-            time.sleep(0.5)
+            ser.flush()
+            time.sleep(0.8)  # Wait longer for response
+            
+            # Read response
             response = ser.read(100).decode('utf-8', errors='ignore')
             ser.close()
+            
+            print(f"    Response: {repr(response)}")
             
             if 'OK' in response:
                 print(f"✓ Found modem at: {port}")
                 return port
         except (serial.SerialException, PermissionError) as e:
+            print(f"    Error: {e}")
             continue
     
+    print("  ✗ No modem found responding to AT commands")
+    print("  Hint: The modem might be locked by ModemManager.")
+    print("       Try: sudo systemctl stop ModemManager")
     return None
 
 
@@ -52,6 +79,7 @@ def send_at_command(ser, command, expected="OK", timeout=5):
     try:
         # Send command
         ser.write(f"{command}\r\n".encode())
+        ser.flush()
         time.sleep(0.5)
         
         # Read response with timeout
@@ -60,16 +88,25 @@ def send_at_command(ser, command, expected="OK", timeout=5):
         while time.time() - start_time < timeout:
             if ser.in_waiting:
                 response += ser.read(ser.in_waiting)
-                if b'\r\n' in response:
-                    break
-            time.sleep(0.1)
+                time.sleep(0.1)  # Give more time for complete response
+            else:
+                time.sleep(0.1)
+            # Break if we have a complete response (ends with OK or ERROR)
+            if expected == "" or expected in response.decode('utf-8', errors='ignore'):
+                break
         
         response_str = response.decode('utf-8', errors='ignore')
         print(f"  Command: {command}")
         print(f"  Response: {response_str.strip()}")
         
+        # Check for expected response or error
+        if expected == "":
+            return True  # For commands without expected response (like reset)
         if expected in response_str:
             return True
+        if "ERROR" in response_str:
+            print(f"  ✗ Modem returned ERROR")
+            return False
         return False
         
     except Exception as e:
@@ -145,6 +182,28 @@ def switch_to_ecm_mode(apn=None):
         return False
 
 
+def check_modemmanager():
+    """
+    Check if ModemManager is running and potentially locking the modem.
+    Returns True if ModemManager should be stopped.
+    """
+    try:
+        # Check if ModemManager service is running
+        result = os.system("systemctl is-active --quiet ModemManager")
+        if result == 0:
+            print("\n⚠ ModemManager is running and may lock the modem.")
+            response = input("Stop ModemManager temporarily? (yes/no): ").strip().lower()
+            if response in ['yes', 'y']:
+                os.system("systemctl stop ModemManager")
+                print("✓ ModemManager stopped")
+                return True
+            else:
+                print("⚠ Continuing with ModemManager running (may cause issues)")
+        return False
+    except:
+        return False
+
+
 def main():
     """
     Main entry point.
@@ -157,6 +216,9 @@ def main():
     if os.geteuid() != 0:
         print("\n✗ This script must be run as root (sudo)")
         sys.exit(1)
+    
+    # Check for ModemManager
+    modemmanager_stopped = check_modemmanager()
     
     # Get APN from command line or use default
     apn = None
@@ -173,6 +235,11 @@ def main():
     
     # Switch to ECM mode
     success = switch_to_ecm_mode(apn=apn)
+    
+    # Restart ModemManager if we stopped it
+    if modemmanager_stopped:
+        print("\nRestarting ModemManager...")
+        os.system("systemctl start ModemManager")
     
     if success:
         print("\n" + "=" * 60)
