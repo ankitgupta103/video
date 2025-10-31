@@ -1,0 +1,72 @@
+========================================
+5G-INTEGRATION DIRECTORY OVERVIEW
+========================================
+
+Purpose: Complete integration guide for Waveshare RM530 5G modem
+
+Status: ✅ SETUP COMPLETE - ECM Mode Active
+
+========================================
+DIRECTORY STRUCTURE
+========================================
+
+📁 5g-integration/
+│
+├── 📄 README.md                    ⭐ MAIN ENTRY POINT
+│   └── Overview, quick start, directory guide
+│
+├── 📄 README-INDEX.md              Quick file index
+├── 📄 GETTING-STARTED.md           Navigation guide
+│
+├── 📁 scripts/                     🔧 AUTOMATION
+│   ├── setup-ecm-mode.py          Switch modem to ECM
+│   ├── configure-network.sh       Setup NetworkManager
+│   └── verify-5g.sh               Verify 5G status
+│
+├── 📁 docs/                        📚 DOCUMENTATION
+│   ├── SETUP-COMPLETE.md          Success summary
+│   ├── ecm-integration.md         Full setup guide
+│   ├── verify-5g.md              Verification guide
+│   └── NEXT-STEPS.md             Quick commands
+│
+├── 📁 legacy/                      📜 OLD/REFERENCE
+│   ├── integration.md             Old QMI setup
+│   └── comparison-qmi-vs-ecm.md   Why ECM > QMI
+│
+└── 📁 reference/                   📖 REFERENCES
+    ├── AT-COMMANDS.md            AT command ref
+    └── TROUBLESHOOTING.md        Troubleshooting guide
+
+========================================
+QUICK ACCESS
+========================================
+
+Start Here:
+  → README.md
+
+Verify Setup:
+  → bash scripts/verify-5g.sh
+
+Troubleshoot:
+  → reference/TROUBLESHOOTING.md
+
+Check AT Commands:
+  → reference/AT-COMMANDS.md
+
+Navigation Help:
+  → GETTING-STARTED.md
+
+File Index:
+  → README-INDEX.md
+
+========================================
+KEY INFORMATION
+========================================
+
+Mode: ECM (Ethernet Control Model)
+Interface: usb0
+Manager: NetworkManager
+Status: ✅ Active and Working
+Connection: RM530-5G-ECM
+
+========================================
