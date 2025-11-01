@@ -1,0 +1,8 @@
+include README.md
+include LICENSE
+include pyproject.toml
+recursive-include rm530_5g_integration/docs *.md
+recursive-include rm530_5g_integration/reference *.md
+recursive-include rm530_5g_integration/legacy *.md
+recursive-include rm530_5g_integration/scripts *.sh
+
