@@ -1,0 +1,52 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "rm530-5g-integration"
+version = "1.0.0"
+authors = [
+    {name = "Anand", email = "anand@example.com"}
+]
+description = "Integration tools and scripts for Waveshare RM530 5G modem with Raspberry Pi using ECM mode"
+readme = "README.md"
+license = {text = "MIT"}
+requires-python = ">=3.7"
+keywords = ["raspberry-pi", "5g", "rm530", "modem", "integration", "ecm", "networking"]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Developers",
+    "Intended Audience :: System Administrators",
+    "Topic :: System :: Networking",
+    "Topic :: System :: Hardware",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.7",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Operating System :: POSIX :: Linux",
+]
+
+dependencies = [
+    "pyserial>=3.5",
+]
+
+[project.scripts]
+rm530-setup-ecm = "rm530_5g_integration.scripts.setup_ecm:main"
+rm530-configure-network = "rm530_5g_integration.scripts.configure_network:main"
+rm530-verify = "rm530_5g_integration.scripts.verify:main"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["rm530_5g_integration*"]
+
+[tool.setuptools.package-data]
+"rm530_5g_integration" = [
+    "docs/*.md",
+    "reference/*.md",
+    "legacy/*.md",
+    "scripts/*.sh",
+]
+
