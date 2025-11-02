@@ -44,9 +44,6 @@ include = ["rm530_5g_integration*"]
 
 [tool.setuptools.package-data]
 "rm530_5g_integration" = [
-    "docs/*.md",
-    "reference/*.md",
-    "legacy/*.md",
     "scripts/*.sh",
 ]
 
